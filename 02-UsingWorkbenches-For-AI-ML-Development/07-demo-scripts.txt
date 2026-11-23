@@ -1,0 +1,13 @@
+07- Working in Workbenches
+================================================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+2) my gitlab url :
+
+
+3)  Some urls for top utilities :
+https://github.com/Syllo/nvtop
+https://nvitop.readthedocs.io/en/stable/
