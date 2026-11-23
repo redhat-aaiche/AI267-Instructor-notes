@@ -1,0 +1,54 @@
+05- Building Custom Workbench Images
+================================================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+2) Create a Custom Image :
+a) start the lab :
+lab start workbench-custom
+cd ~/course/labs/workbench-custom
+cat Containerfile
+echo "seaborn==0.13.2" >> \
+requirements.txt
+
+podman login \
+registry.lab.example.com:8443 -u developer -p developer
+
+podman build . -t \
+registry.lab.example.com:8443/developer/custom-workbench:1.0
+
+podman push \
+registry.lab.example.com:8443/developer/custom-workbench:1.0
+
+2) Check the new image is located in the Lab Image Registry :
+$ firefox https://registry.lab.example.com:8443 &
+developer 
+developer
+
+Search for custom-workbench
+
+================================================
+
+2) Dashboard - Use the custom workbench image :
+See the GE
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+https://data-science-gateway.apps.lab.example.com
+admin
+redhatocp
+
+Go to Settings › Environment setup › Workbench images,
+
+
+Image Location :  registry.lab.example.com:8443/developer/custom-workbench:1.0
+Name : custom-workbench
+Displayed Contents --> Packages :
+Packages :		seaborn
+Version:		0.13.2
+
+
+3) Dashboard - Use the custom workbench image as developer :
+....
+
+
