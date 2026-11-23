@@ -1,0 +1,187 @@
+========================================
+03-a-BuildingASimpleGenAIApplication
+========================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+0) Enable llama-stack operator:
+
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+oc edit DataScienceCluster/default-dsc 
+
+oc get DataScienceCluster/default-dsc -o yaml > datasciencecluster-default-dsc.yaml
+Check that :
+	llamastackoperator:
+      		managementState: Managed
+oc get pod -n redhat-ods-applications | grep llama-stack
+	llama-stack-k8s-operator-controller-manager-7bdd7cd99b-jbmst      1/1     Running     0             40s
+
+1) create new project aa
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc new-project aa
+
+
+2) Create DB : pre-requisite for llama stack
+================
+postgreSQL.yaml
+================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: llamadb
+  name: llamadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: llamadb
+  template:
+    metadata:
+      labels:
+        app: llamadb
+    spec:
+      containers:
+      - env:
+        - name: POSTGRESQL_DATABASE
+          value: llamastack
+        - name: POSTGRESQL_USER
+          value: llamastack
+        - name: POSTGRESQL_PASSWORD
+          value: llamastack
+        image: registry.lab.example.com:8443/redhattraining/sclorg/postgresql-15-c9s:20260218
+        name: postgresql
+        ports:
+        - containerPort: 5432
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U llamastack -d llamastack
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: llamadb
+  name: llamadb
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: llamadb
+---
+
+
+
+oc apply -f postgreSQL.yaml
+oc get pod
+
+
+3) Create llama stack CR
+===========================
+llamaStackDistribution.yaml 
+===========================
+apiVersion: llamastack.io/v1alpha1
+kind: LlamaStackDistribution
+metadata:
+  annotations:
+  name: llamastack
+  namespace: aa
+spec:
+  network:
+    exposeRoute: true
+  replicas: 1
+  server:
+    containerSpec:
+      env:
+      - name: VLLM_URL
+        value: http://qwen-vllm:8000/v1
+      - name: INFERENCE_MODEL
+        value: Qwen/Qwen3-0.6B
+      - name: EMBEDDING_MODEL
+        value: ibm-granite/granite-embedding-125m-english
+
+      - name: ENABLE_SENTENCE_TRANSFORMERS
+        value: "true"
+      - name: EMBEDDING_PROVIDER
+        value: sentence-transformers
+      - name: TRUSTYAI_LMEVAL_USE_K8S
+        value: "false"
+
+      - name: POSTGRES_HOST
+        value: llamadb
+      - name: POSTGRES_PORT
+        value: "5432"
+      - name: POSTGRES_DB
+        value: llamastack
+      - name: POSTGRES_USER
+        value: llamastack
+      - name: POSTGRES_PASSWORD
+        value: llamastack
+
+      name: llama-stack
+
+    distribution:
+      name: rh-dev
+    storage:
+      size: 1Gi
+      
+
+
+
+oc apply -f llamaStackDistribution.yaml
+oc get llamaStackDistribution
+oc get pod | grep llamastack
+
+4) Create llama stack route
+==============================
+llamaStackServerRoute.yaml
+==============================
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  annotations:
+    haproxy.router.openshift.io/timeout: 5m
+  name: llamastack-api
+spec:
+  port:
+    targetPort: 8321
+  tls:
+    insecureEdgeTerminationPolicy: Redirect
+    termination: edge
+  to:
+    kind: Service
+    name: llamastack-service
+
+oc apply -f llamaStackServerRoute.yaml
+oc get route
+
+5) Access llama stack endpoints
+firefox https://llamastack-api-aa.apps.lab.example.com/docs &    
+
+curl -sk \
+    https://llamastack-api-aa.apps.lab.example.com/v1/health | jq .
+
+curl -sk \
+    https://llamastack-api-aa.apps.lab.example.com/v1/models | jq .    
+    
+6) Clean
+oc delete project aa
+
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+oc edit DataScienceCluster/default-dsc 
+oc get DataScienceCluster/default-dsc -o yaml > datasciencecluster-default-dsc.yaml
+Check that :
+	llamastackoperator:
+      		managementState: Removed
+
+oc get pod -n redhat-ods-applications | grep llama-stack 
+==> none
