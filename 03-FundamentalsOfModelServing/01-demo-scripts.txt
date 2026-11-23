@@ -1,0 +1,19 @@
+=============================================
+01-  Model Serving Workflow and Architecture
+=============================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) CLI -- Get the description of the  DataScienceCluster
+[admin]$ oc get DataScienceCluster/default-dsc -o yaml > datasciencecluster-default-dsc.yaml
+
+3) CLI -- Check is Kserve is enabled :
+--> Search for kserve
+vi -R datasciencecluster-default-dsc.yaml 
+	/kserve:
+
+
+
