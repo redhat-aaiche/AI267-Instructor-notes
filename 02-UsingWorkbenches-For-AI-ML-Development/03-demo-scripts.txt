@@ -1,0 +1,55 @@
+03- Creating and Managing Workbench Environments
+================================================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) CLI -- Prepare A Config Map with some environment variables : Inject environment variables into a workbench from a Config Map : 
+[developer]$  oc project
+[developer]$ oc create cm db-config \
+   --from-literal=db_host=postgresl \
+   --from-literal=db_pass=pgl_pass \
+   --from-literal=db_user=developer
+   
+[developer]$ $ oc get cm db-config -o yaml > db_configmap.yaml
+[developer]$ vi db_configmap.yaml
+[developer]$  cat db_configmap.yaml
+
+2) Dashboard --  Inject environment variables (from a Config Map) and secret key/value into a workbench  : 
+2a)  Dashboard -- Create a workbench with :
+-  name : my-first-workbench
+- image :  Jupyter |  Minimal | CPU  |  Python 3.12
+- Environment variables - Secret :
+	* variable type : 	secret and Key/value
+	* key name : 		external_service_api_key
+	* Value :			myapikey
+- Environment variables - ConfigMap :
+	* variable type : 	Config Map and Upload
+	* file name : 		db_configmap.yaml
+
+3) Dashboard -- Login to the workbench and check Variables inside of that workbench container :
+3a)  Dashboard -- Open a Terminal
+
+3b) Dashboard/CLI --  List the environment variable injected by using a secret :
+[developer]$ env | grep external_service_api_key
+
+3b) Dashboard/CLI  -- List the environment variable injected by using a ConfigMap :
+[developer]$  env | grep "db_"	
+	
+
+4) Dashboard -- Use the environment variables in a Notebook :
+4a) Create a new Notebook in the Workbench :
+4b) Read / Print the enviroment variables :
+		import os
+
+		print("'db_host': " + os.getenv("db_host") + "\n" + \
+		      "'db_pass': " + os.getenv("db_pass") + "\n" + \
+		      "'db_user': " + os.getenv("db_user") + "\n")
+
+
+		print("'external_service_api_key': " + os.getenv("external_service_api_key") + "\n")
+
+
+
