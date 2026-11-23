@@ -1,0 +1,15 @@
+===============================
+05-a-BuildingRAGApplications
+===============================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+
+https://dejan.ai/tools/cosine/
+https://ml-playground.com/#
+
+
+
