@@ -1,0 +1,70 @@
+05- Using Connections for Data Integrations
+================================================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+2) Dashboard -- Create a new project :
+name :  example-project
+
+3) Dashboard -- Create an S3 Connection :
+name :  						example-s3-connection
+AWS_ACCESS_KEY_ID :			minio  
+AWS_DEFAULT_REGION :		any   		
+AWS_S3_BUCKET :  				credit-datasets
+AWS_S3_ENDPOINT : 			https://s3.example.com
+AWS_SECRET_ACCESS_KEY : 	mysecretkey
+
+3) CLI -- Read the content of the S3 Connection Secret :
+[developer]$  oc project  example-project
+
+[developer]$ echo "bWluaW8=" | base64 -d; echo
+[developer]$ echo "YW55" | base64 -d; echo
+[developer]$ echo "Y3JlZGl0LWRhdGFzZXRz" | base64 -d; echo
+[developer]$ echo "aHR0cHM6Ly9zMy5leGFtcGxlLmNvbQ==" | base64 -d; echo
+[developer]$ echo "bXlzZWNyZXRrZXk=" | base64 -d; echo
+
+
+================================================
+
+4) CLI - Create a config.json with credentials to a Registry :
+4a) create a new file :
+[developer] $ vi config.json
+{
+  "auths": {
+    "quay.io": {
+      "auth": "dGVzdHVzZXI6dGVzdHBhc3N3b3Jk",
+      "email": "test@example.com"
+    }
+  }
+}
+4b) Decode the credentials : 
+[developer] $ echo dGVzdHVzZXI6dGVzdHBhc3N3b3Jk | base64 -d ;  echo
+
+5) Dashboard --  Create an OCI registry - v1 Connection :
+-  Connection name : quay-registry
+- Access Type :  Secret + Pull secret
+- Secret details :
+	* Upload config.json ( created above )
+- Registry host :
+	quay.io
+
+5) CLI -- Examine another example of config.json using a robot :
+[developer] $ echo cXVheXVzZXIrcm9ib3RhY2NvdW50OnlvdXJzZWNyZXRwYXNzd29yZAo= | base64 -d ;  echo
+
+6) CLI --  Examine the Secret created for that OCI-registry :
+TBD 
+[developer]$ 
+
+================================================
+project name : example-project
+
+7) Dashboard --  Create a URI  Connection :
+-  Connection name : example-uri-connection
+- URI:  https://example.com/data/repository
+
+
+8) CLI --  Examine the Secret created for that URI Connection :
+TBD 
+[developer]$ 
