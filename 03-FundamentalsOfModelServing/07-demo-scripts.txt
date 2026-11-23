@@ -1,0 +1,17 @@
+==========================================
+07-   Requirements for Generative AI Serving
+==========================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) link for cost  between deco Prefill phase and Decode Phase
+https://www.llm-prices.com/
+
+3) Meta -- OPT models :
+https://arxiv.org/pdf/2205.01068
+
+4) VRAM Calculator :
+https://github.com/rh-aiservices-bu/odh-tec
