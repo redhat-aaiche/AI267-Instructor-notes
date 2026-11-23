@@ -1,0 +1,46 @@
+=========================================
+01-  Model Serving Workflow and Architecture
+=========================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+2)  Check that ModelRegistry is not enabled :
+oc get DataScienceCluster/default-dsc -o yaml > 00-datasciencecluster-default-dsc.yaml
+vi -R 00-datasciencecluster-default-dsc.yaml
+	Search : 
+		/modelregistry:
+		
+3) use the lab and demonstrate how CRDs modelRegistry are used to create Catalog and ModelRegistry
+
+
+4)  Start the lab :
+lab start serving-catalog
+oc get DataScienceCluster/default-dsc -o yaml > 01-datasciencecluster-default-dsc.yaml
+vi -R 01-datasciencecluster-default-dsc.yaml
+	Search : 
+		/modelregistry:
+		
+5) Check that the Catalog is created in rhoai-model-registries
+	oc get pod -n rhoai-model-registries | grep catalog
+	Use the OpenShift GUI : it is more visible
+	
+   Check that a CRD is created in  rhoai-model-registries
+   ==> this is used for the Catalog
+   oc get ModelRegistry.components.platform.opendatahub.io -n rhoai-model-registries
+   
+6) Check the ModelRegistry Operator :
+	oc get pod -n redhat-ods-applications | grep model-registry
+7) Check the CRD that ModelRegistry is watching :	
+	  oc get ModelRegistry.modelregistry.opendatahub.io -n rhoai-model-registries
+	Use the OpenShift GUI : it is more visible
+
+8) Make sure to differentiate between the 2 CRs
+     Looks that those CRs are not created in user projects
+     		history | grep ModelRegistry
+     Note that DBs need to be created before
+     
+9) clean :
+lab finish serving-catalog
+
