@@ -1,0 +1,45 @@
+===================
+03- Managing Projects
+===================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+2) Dashboard -- Create DS Project :
+name :  		My AI Project
+description :	A Project for Training and Serving AI Models
+
+3) Create 2 workbenches :
+name :  data-preparation
+name :  model-training
+image :  Jupyter |  Minimal | CPU  |  Python 3.12
+
+
+4) CLI :
+a) list the project details in yaml :
+[developer]$ oc get project my-ai-project -o yaml
+
+=================================================================
+5) CLI -- Create DS Project :
+[developer]$ oc whoami
+[developer]$ oc new-project my-cli-project
+
+6) CLI --  Give the project a RHOAI label :
+[admin]$ oc login -u admin -p redhatocp https://api.lab.example.com:6443
+[admin]$  oc whoami
+
+[admin]$ oc label namespace my-cli-project \
+    opendatahub.io/dashboard='true'
+
+
+
+
+=================================================================
+7) CLI --  Create a new group of users :
+
+[admin]$ oc login -u admin -p redhatocp https://api.lab.example.com:6443
+[admin]$ oc whoami
+
+[admin]$ oc adm groups new my-group
+
