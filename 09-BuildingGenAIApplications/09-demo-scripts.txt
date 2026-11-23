@@ -1,0 +1,121 @@
+=====================================================
+09-a-ImplementingSafeGenAIApplicationsWithGuardrails
+=====================================================
+
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+This will only demonstrate the creation of gorch pod when GuardrailsOrchestrator is created
+if you want more, use lab start genai-guardrails instead
+
+lab start genai-guardrails
+oc new-project guardrails-project
+
+
+
+=================================
+fms-orchestr8-config-gateway.yaml
+=================================
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-gateway
+  labels:
+    app: fmstack-nlp
+data:
+  config.yaml: |
+    orchestrator:
+      host: "localhost"
+      port: 8032
+    detectors:
+      - name: regex
+        input: true
+        output: true
+        detector_params: 
+          regex:
+            - email
+            - us-phone-number
+            - credit-card
+            - \b(?i:vmware|broadcom|docker|oracle|suse)\b          
+      - name: hap
+        input: true
+        output: true
+        detector_params: {}
+    routes:
+      - name: all
+        detectors: 
+          - regex
+          - hap          
+      - name: hap
+        detectors:
+          - hap            
+      - name: passthrough
+        detectors:
+
+
+
+oc apply -f fms-orchestr8-config-gateway.yaml
+
+===============================
+fms-orchestr8-config-nlp.yaml
+===============================
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: fms-orchestr8-config-nlp
+data:
+  config.yaml: |
+    chat_generation:
+      service:
+        hostname: qwen3-predictor.genai-guardrails.svc.cluster.local
+        port: 8080
+    detectors:
+      regex:
+        type: text_contents
+        service:
+            hostname: "127.0.0.1"
+            port: 8080
+        chunker_id: whole_doc_chunker
+        default_threshold: 0.5
+      hap:
+        type: text_contents
+        service:
+          hostname: ibm-hate-and-profanity-detector-predictor.genai-guardrails.svc.cluster.local
+          port: 8000
+        chunker_id: whole_doc_chunker
+        default_threshold: 0.5
+        
+
+
+oc apply -f   fms-orchestr8-config-nlp.yaml      
+
+
+============
+gorch.yaml
+============
+apiVersion: trustyai.opendatahub.io/v1alpha1
+kind: GuardrailsOrchestrator
+metadata:
+  name: gorch
+spec:
+  enableBuiltInDetectors: true
+  enableGuardrailsGateway: true
+  guardrailsGatewayConfig: fms-orchestr8-config-gateway
+  orchestratorConfig: fms-orchestr8-config-nlp
+  otelExporter: {}
+  replicas: 1 
+  
+  
+
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+oc apply -f gorch.yaml  
+
+[student@workstation ~]$ oc get pod
+NAME                     READY   STATUS    RESTARTS   AGE
+gorch-6fb745c497-98vpx   3/3     Running   0          10s
+
+
