@@ -1,0 +1,30 @@
+01- Worbench Architecture 
+==========================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) CLI -- Get the owner hierarchy of workbench pod :
+[developer]$  oc get pod
+[developer]$ oc get pod/< pod name > -o jsonpath='{.metadata.ownerReferences}' | jq
+[developer]$ oc get sts
+[developer]$ oc get sts/< stateful set name > -o jsonpath='{.metadata.ownerReferences}' | jq
+[developer]$  oc get notebook 
+[developer]$  oc get notebook/< notebook name > -o jsonpath='{.spec}' | jq
+
+3) CLI -- List the Openshift resources created for the workbench :
+[developer]$  oc get pod,svc,sts,route
+
+
+4) Dashboard -- Add addtional storage :
+name : 			additional-storage
+mount patch :  	more-data
+
+5) View the Openshift Resources created :
+[developer]$  oc set volumes pod/< pod name >
+
+
+
+
