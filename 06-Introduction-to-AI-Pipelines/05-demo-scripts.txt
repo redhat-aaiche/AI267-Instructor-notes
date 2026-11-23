@@ -1,0 +1,114 @@
+==============================================
+05-a-CreatingBasicPipelinesWithTheKubeFlowSDK
+==============================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) CLI --  
+
+lab start dspa-kubeflow
+python -m venv .venv
+source .venv/bin/activate
+
+pip install kfp==2.15.2
+
+======================
+pipeline.py
+======================
+from kfp import dsl
+from kfp import compiler
+
+@dsl.component
+def say_hello(name: str) -> str:
+    hello_text = f'Hello, {name}!'
+    print(hello_text)
+    return hello_text
+
+@dsl.pipeline
+def hello_pipeline(recipient: str) -> str:
+    hello_task = say_hello(name=recipient)
+    return hello_task.output
+
+compiler.Compiler().compile(hello_pipeline, 'pipeline.yaml')
+
+
+3) Compile to the IR format :
+(.venv) $ python pipeline.py
+(.venv) $ ls -rtl pipeline.*
+
+3) upload the pipeline and create a Run
+	make sure you are in dspa-kubeflow project where the lab script has created the pipeline server
+	
+	pipeline has a parameter
+		==> so don't forget to fill in the parameter
+
+	
+...
+
+4) Compile to the K8s format :
+======================
+pipeline-manifest.py
+======================
+from kfp import dsl
+from kfp import compiler
+from kfp.compiler.compiler_utils import KubernetesManifestOptions
+
+
+@dsl.component
+def say_hello(name: str) -> str:
+    hello_text = f'Hello, {name}!'
+    print(hello_text)
+    return hello_text
+
+@dsl.pipeline
+def hello_pipeline(recipient: str) -> str:
+    hello_task = say_hello(name=recipient)
+    return hello_task.output
+
+if __name__ == "__main__":
+    outfile = "pipeline-manifest.yaml"
+    # Compile the pipeline
+    compiler.Compiler().compile(
+        hello_pipeline,
+        outfile,
+        kubernetes_manifest_format=True,
+        kubernetes_manifest_options=KubernetesManifestOptions(
+            pipeline_name="my-second-pipeline",
+            pipeline_display_name="My Second Pipeline",
+            pipeline_version_name="my-second-pipeline-v1",
+            pipeline_version_display_name="My Second Pipeline v1",
+            namespace="dspa-kubeflow",
+            include_pipeline_manifest=True
+        )
+    )
+
+    print(
+        "Pipeline compiled.\n"
+        f"Use the Kubernetes API to import the '{outfile}' manifest file"
+    )
+    
+    
+(.venv) $ python pipeline-manifest.py
+(.venv) $ ls -rtl pipeline-manifest.*
+(.venv) $ less pipeline-manifest.yaml
+
+oc login \
+    -u developer -p developer https://api.lab.example.com:6443
+
+oc patch dspa dspa \
+    -n dspa-kubeflow --type=merge \
+    -p '{"spec": {"apiServer": {"pipelineStore": "kubernetes"}}}'
+    
+
+oc apply -f pipeline-manifest.yaml
+oc get pipeline
+oc get PipelineVersion
+
+5) Create a Run if you want :
+
+6) Clean:
+deactivate
+lab finish dspa-kubeflow
