@@ -1,0 +1,28 @@
+========================================================
+01-a-RedHatOpenShift-AI-FundamentalsAndArchitecture
+========================================================
+1) login as Developer :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+
+oc get DataScienceCluster/default-dsc -o yaml > datasciencecluster-default-dsc.yaml
+
+oc get pod -n redhat-ods-applications  |  grep dashboard
+
+oc get imagestream -n redhat-ods-applications
+
+oc get templates -n redhat-ods-applications
+
+oc get pod -n redhat-ods-applications  |   grep "operator"
+
+oc get odhdashboardconfigs odh-dashboard-config -n \
+    redhat-ods-applications -o yaml
+
+
+oc get pod -n rhods-notebooks
+
+
+
