@@ -1,0 +1,63 @@
+============================================
+07 MonitoringHardwareAndPerformanceMetrics
+============================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) start the lab 
+lab start monitoring-performance
+
+oc get deploy -n openshift-monitoring
+
+oc get deploy -n openshift-user-workload-monitoring
+	==> TBD : what makes this pod running ??
+	
+oc get template/kserve-ovms -o yaml -n redhat-ods-applications
+
+oc project monitoring-performance
+oc get ServiceMonitor
+oc get ServiceMonitor/distilbert-metrics -o yaml
+
+
+3) clean :
+lab finish monitoring-performance
+
+
+==========================================================================================
+Enable UWM
+==========================================================================================
+[student@workstation ~]$ cat 02-cluster-monitoring-config 
+$ oc -n openshift-monitoring get configmap cluster-monitoring-config 
+
+NAME                        DATA   AGE
+cluster-monitoring-config   1      163d
+
+---------------------------------------------------------------------------------------
+
+
+$ oc -n openshift-monitoring get configmap cluster-monitoring-config -o yaml 
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+ ...
+  name: cluster-monitoring-config
+  namespace: openshift-monitoring
+data:
+  config.yaml: |
+    enableUserWorkload: true
+    prometheusK8s:
+      retention: 24h
+---------------------------------------------------------------------------------------
+$ oc -n openshift-user-workload-monitoring get pod
+NAME                                   READY   STATUS    RESTARTS   AGE
+prometheus-operator-577c9d7bcb-ckrtq   2/2     Running   0          88s
+prometheus-user-workload-0             6/6     Running   0          86s
+prometheus-user-workload-1             6/6     Running   0          86s
+thanos-ruler-user-workload-0           4/4     Running   0          86s
+thanos-ruler-user-workload-1           4/4     Running   0          86s
+
