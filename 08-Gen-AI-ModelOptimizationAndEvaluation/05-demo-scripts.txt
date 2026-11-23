@@ -1,0 +1,13 @@
+=================================================
+05-a-RunningEvaluationJobsInRedHatOpenShiftAI
+=================================================
+1) login as Admin :
+https://data-science-gateway.apps.lab.example.com
+oc login -u developer -p developer https://api.lab.example.com:6443
+oc login -u admin -p redhatocp https://api.lab.example.com:6443
+
+
+2) CLI -- 
+
+oc get odhdashboardconfigs odh-dashboard-config -n \
+    redhat-ods-applications -o yaml
